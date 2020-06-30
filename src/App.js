@@ -1,26 +1,103 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
 
-function App() {
+const emptyBoard = Array(9).fill("");
+
+export default function App() {
+  const [board, setBoard] = useState(emptyBoard);
+  const [currentPlayer, setCurrentPlayer] = useState("O");
+  const [winner, setWinner] = useState(null);
+
+  useEffect(() => {
+    checkWinner();
+  }, [board]);
+
+  const handleCellClick = index => {
+    if (winner) return null;
+
+    if (board[index] !== "") return null;
+
+    setBoard(
+      board.map((item, itemIndex) =>
+        itemIndex === index ? currentPlayer : item
+      )
+    );
+
+    setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
+  };
+
+  const checkWinner = () => {
+    const possibleWaysToWin = [
+      [board[0], board[1], board[2]],
+      [board[3], board[4], board[5]],
+      [board[6], board[7], board[8]],
+
+      [board[0], board[3], board[6]],
+      [board[1], board[4], board[7]],
+      [board[2], board[5], board[8]],
+
+      [board[0], board[4], board[8]],
+      [board[2], board[4], board[6]]
+    ];
+
+    possibleWaysToWin.forEach(cells => {
+      if (cells.every(cell => cell === "O")) {
+        setWinner("O");
+      }
+
+      if (cells.every(cell => cell === "X")) {
+        setWinner("X");
+      }
+    });
+
+    checkDraw();
+  };
+
+  const checkDraw = () => {
+    if (board.every(item => item !== "")) {
+      setWinner("E");
+    }
+  };
+
+  const resetGamer = () => {
+    setCurrentPlayer("O");
+    setBoard(emptyBoard);
+    setWinner(null);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+      <h1 className="title">Jogo da Velha</h1>
+
+      <div className={`board ${winner ? "gamer-over" : ""}`}>
+        {board.map((item, index) => (
+          <div
+            key={index}
+            className={`cell ${item}`}
+            onClick={() => handleCellClick(index)}
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+      {winner && (
+        <footer>
+          {winner === "E" ? (
+            <h2 className="winner-message">
+              <span className={winner}> Empatou </span>
+            </h2>
+          ) : (
+            <h2 className="winner-message">
+              <span className={winner}>[{winner}] </span>
+              Venceu !!
+            </h2>
+          )}
+
+          <button className="bnt" onClick={resetGamer}>
+            Reiniciar
+          </button>
+        </footer>
+      )}
+    </main>
   );
 }
-
-export default App;
